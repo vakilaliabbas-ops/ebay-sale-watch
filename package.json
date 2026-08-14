@@ -1,0 +1,15 @@
+{
+  "name": "ebay-sale-watch",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Watches an IMAP inbox for eBay sale notifications and drafts the import-duty message for AL REZA ENTERPRISE.",
+  "scripts": {
+    "watch": "node src/watch.js",
+    "test": "node src/test.js"
+  },
+  "dependencies": {
+    "imapflow": "^1.0.196",
+    "mailparser": "^3.7.1"
+  }
+}

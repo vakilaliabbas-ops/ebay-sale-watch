@@ -1,0 +1,9 @@
+{
+  "IMAP_HOST": "mail.inmateto.com",
+  "IMAP_PORT": "993",
+  "IMAP_SECURE": "true",
+  "IMAP_MAILBOX": "INBOX",
+  "LOOKBACK_DAYS": "14",
+  "OWN_DOMAIN": "inmateto.com",
+  "READY_ONLY": "true"
+}

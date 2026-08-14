@@ -1,0 +1,44 @@
+name: eBay Sale Watch
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every ~15 minutes
+  workflow_dispatch: {}        # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write              # so it can commit the updated drafts
+
+concurrency:
+  group: sale-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - name: Check inbox and draft duty notes
+        env:
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          APP_PASSPHRASE: ${{ secrets.APP_PASSPHRASE }}
+        run: node src/watch.js
+
+      - name: Commit updated drafts (only if changed)
+        run: |
+          git config user.name "sale-watch-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain docs/drafts.enc docs/state.json)" ]; then
+            git add docs/drafts.enc docs/state.json
+            git commit -m "Update sale drafts [skip ci]"
+            git push
+          else
+            echo "No change — nothing to commit."
+          fi

@@ -1,0 +1,8 @@
+node_modules/
+.env
+.npm-cache/
+*.log
+.DS_Store
+
+# NOTE: docs/drafts.enc and docs/state.json ARE committed on purpose —
+# they are encrypted and GitHub Pages must serve them to your phone.

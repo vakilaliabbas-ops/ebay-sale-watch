@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>eBay Sale Watch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+  :root{
+    --bg:#EAEEF2; --surface:#FFFFFF; --surface-2:#F4F7F9; --surface-3:#EDF1F5;
+    --ink:#14243A; --ink-soft:#42556C; --muted:#7B8B9C; --line:#DBE2E9; --line-strong:#C7D1DB;
+    --accent:#0B6E7A; --accent-press:#095A64; --accent-ink:#FFFFFF; --accent-wash:#E4F1F2;
+    --ready:#1B7A5B; --ready-wash:#E4F2EC; --ready-line:#B9DDCE;
+    --duty:#A9660F; --duty-wash:#FBF0DF; --duty-line:#EAD3AC;
+    --shadow:0 1px 2px rgba(20,36,58,.06), 0 6px 18px rgba(20,36,58,.07);
+    --shadow-lg:0 8px 34px rgba(20,36,58,.16);
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0A121C; --surface:#121E2C; --surface-2:#0E1826; --surface-3:#182636;
+    --ink:#E7EDF4; --ink-soft:#AEBDCE; --muted:#7F92A7; --line:#223141; --line-strong:#2C3F53;
+    --accent:#26A6B4; --accent-press:#1E8B97; --accent-ink:#04222A; --accent-wash:#0F2B31;
+    --ready:#4FB98F; --ready-wash:#0F2620; --ready-line:#25473A;
+    --duty:#E0A44A; --duty-wash:#291F10; --duty-line:#4A3A1E;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35); --shadow-lg:0 10px 40px rgba(0,0,0,.55);
+  }}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.45; padding-bottom:40px}
+  .app{max-width:520px; margin:0 auto; min-height:100vh}
+  header{position:sticky; top:0; z-index:10; background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.5) blur(14px); -webkit-backdrop-filter:saturate(1.5) blur(14px);
+    border-bottom:1px solid var(--line); padding:calc(env(safe-area-inset-top) + 12px) 18px 12px; display:flex; align-items:center; gap:11px}
+  .mark{width:34px;height:34px;border-radius:9px;flex:none;background:linear-gradient(145deg,var(--accent),var(--accent-press));
+    display:grid;place-items:center;color:var(--accent-ink);box-shadow:var(--shadow)}
+  .mark svg{width:19px;height:19px}
+  .htxt{display:flex;flex-direction:column;line-height:1.05}
+  .htxt b{font-size:16px;letter-spacing:-.02em} .htxt span{font-size:11px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+  header .sp{flex:1}
+  .ibtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);display:grid;place-items:center;cursor:pointer}
+  .ibtn svg{width:18px;height:18px}
+  main{padding:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .pad{padding:16px}
+  .stack{display:flex;flex-direction:column;gap:14px}
+  h1{margin:0;font-size:20px;letter-spacing:-.015em}
+  .lead{color:var(--ink-soft);font-size:14px;margin:4px 0 0}
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  label.f{display:flex;flex-direction:column;gap:6px}
+  .lab{font-size:12.5px;font-weight:650;color:var(--ink-soft)}
+  .in,textarea.in{width:100%;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--ink);border-radius:11px;padding:11px 12px;outline:none;font-size:16px;font-family:inherit}
+  textarea.in{resize:vertical;line-height:1.5}
+  .in:focus,textarea.in:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:640;border:1px solid transparent;width:100%;font-family:inherit}
+  .btn svg{width:17px;height:17px}
+  .btn:active{transform:scale(.985)}
+  .btn-primary{background:var(--accent);color:var(--accent-ink)} .btn-primary:active{background:var(--accent-press)}
+  .btn-ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--line-strong)}
+  .btn-sm{padding:9px 12px;font-size:13.5px;width:auto;border-radius:10px}
+  .row{display:flex;gap:10px}
+  .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+  .sale{overflow:hidden}
+  .sale .top{display:flex;gap:11px;align-items:flex-start;padding:14px 15px}
+  .sale .flag{width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;background:var(--surface-3);font-size:20px}
+  .sale .mid{flex:1;min-width:0}
+  .sale .mid b{font-size:15px;display:block}
+  .sale .mid .sub{font-size:12.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.02em;padding:4px 9px;border-radius:999px;text-transform:uppercase}
+  .pill.ready{background:var(--ready-wash);color:var(--ready);border:1px solid var(--ready-line)}
+  .body{padding:0 15px 15px;display:flex;flex-direction:column;gap:10px}
+  .mini{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .banner{background:var(--duty-wash);border:1px solid var(--duty-line);border-radius:12px;padding:11px 12px;font-size:12.5px;color:var(--duty);line-height:1.45}
+  .note{font-size:12px;color:var(--muted);line-height:1.45}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+  .empty svg{width:42px;height:42px;color:var(--line-strong);margin-bottom:10px}
+  .empty b{display:block;color:var(--ink-soft);font-size:15px;margin-bottom:3px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.28s;z-index:50;max-width:88%}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .updated{text-align:center;font-size:11.5px;color:var(--muted);margin-top:4px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v10H3z"/><path d="M16 10h3.5L21 13v4h-5"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div>
+    <div class="htxt"><b>Sale Watch</b><span>AL Reza · Import duty</span></div>
+    <div class="sp"></div>
+    <button class="ibtn" id="refreshBtn" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg></button>
+  </header>
+
+  <main>
+    <!-- Passphrase gate -->
+    <section id="gate" class="card pad stack" style="display:none">
+      <div><div class="eyebrow">Locked</div><h1>Enter your passphrase</h1><p class="lead">The sales below are encrypted. Type the passphrase you set for this watcher to unlock them on this phone.</p></div>
+      <label class="f"><span class="lab">Passphrase</span><input class="in" id="passInput" type="password" autocomplete="off" placeholder="••••••••"></label>
+      <label class="chk"><input type="checkbox" id="remember" checked> Remember on this phone</label>
+      <button class="btn btn-primary" id="unlockBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Unlock</button>
+      <p class="note" id="gateMsg"></p>
+    </section>
+
+    <!-- Sales -->
+    <section id="content" class="stack" style="display:none">
+      <div><div class="eyebrow">Ready to ship</div><h1 id="countTitle">Sales</h1><p class="lead">Each paid eBay sale, with its import-duty note drafted. Tap <b>Copy</b>, then paste into eBay → Messages to the buyer.</p></div>
+      <div id="list" class="stack"></div>
+      <div class="updated" id="updated"></div>
+      <button class="btn btn-ghost btn-sm" id="lockBtn" style="width:auto;align-self:center">Lock again</button>
+    </section>
+
+    <section id="loading" class="empty">Loading…</section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const LS_PASS = "salewatch.pass";
+  const LS_DONE = "salewatch.done";      // handled order refs
+  const ITER = 150000;
+  // For a standalone demo build, a cipher can be embedded here; the live version leaves it empty and fetches drafts.enc.
+  const EMBEDDED_CIPHER = "";
+  let cipherB64 = null;
+
+  let toastT; function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
+  const doneSet = () => new Set(JSON.parse(localStorage.getItem(LS_DONE)||"[]"));
+  const setDone = s => localStorage.setItem(LS_DONE, JSON.stringify([...s]));
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+  async function decrypt(b64, pass){
+    const raw = Uint8Array.from(atob(b64.trim()), c=>c.charCodeAt(0));
+    const salt = raw.slice(0,16), iv = raw.slice(16,28), data = raw.slice(28);
+    const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:ITER, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+    const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, data);
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  async function loadCipher(){
+    try{
+      const res = await fetch("drafts.enc?ts="+Date.now(), {cache:"no-store"});
+      if(!res.ok) throw new Error("no file");
+      cipherB64 = (await res.text()).trim();
+      if(cipherB64.length>0) return true;
+    }catch(e){ /* fall through to embedded */ }
+    if(EMBEDDED_CIPHER){ cipherB64 = EMBEDDED_CIPHER; return true; }
+    return false;
+  }
+
+  function show(sec){ ["gate","content","loading"].forEach(x=>$(x).style.display = x===sec ? (sec==="content"||sec==="gate"?"":"block") : "none"); }
+
+  async function tryUnlock(pass, fromSaved){
+    if(!cipherB64){ show("gate"); $("gateMsg").textContent="No sales file found yet — the cloud watcher hasn't written one, or you're offline."; return; }
+    try{
+      const data = await decrypt(cipherB64, pass);
+      render(data);
+      show("content");
+    }catch(e){
+      show("gate");
+      $("gateMsg").textContent = fromSaved ? "Saved passphrase didn't work — enter it again." : "That passphrase didn't unlock the sales. Check it and try again.";
+      if(fromSaved) localStorage.removeItem(LS_PASS);
+    }
+  }
+
+  function render(data){
+    const sales = (data.sales||[]);
+    const done = doneSet();
+    const pending = sales.filter(s=> !done.has(s.order || s.id));
+    $("countTitle").textContent = pending.length ? `${pending.length} sale${pending.length>1?"s":""} to notify` : "All caught up";
+    $("updated").textContent = data.updatedAt ? ("Updated "+new Date(data.updatedAt).toLocaleString()) : "";
+    const list = $("list");
+    if(!pending.length){
+      list.innerHTML = `<div class="card empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><b>Nothing waiting</b><p class="note">No paid eBay sales need a duty note right now.</p></div>`;
+      return;
+    }
+    list.innerHTML = "";
+    pending.forEach(s=>{
+      const key = s.order || s.id;
+      const title = esc(s.buyer || ("eBay: "+(s.ebayUser||"buyer")));
+      const el = document.createElement("div");
+      el.className = "card sale";
+      el.innerHTML = `
+        <div class="top">
+          <div class="flag">${s.flag||"📦"}</div>
+          <div class="mid">
+            <b>${title}</b>
+            <div class="sub">${esc([s.item, s.country].filter(Boolean).join(" · ")).slice(0,70)}</div>
+          </div>
+          <span class="pill ready">Ready</span>
+        </div>
+        <div class="body">
+          <div class="banner"><b>eBay hides the buyer's email.</b> Copy the note and paste it in <b>eBay → Messages</b> to this buyer${s.ebayUser?` (<b>${esc(s.ebayUser)}</b>)`:""}.</div>
+          <div><div class="mini">Subject</div><input class="in" data-sub></div>
+          <div><div class="mini">Duty message</div><textarea class="in" data-body rows="9"></textarea></div>
+          <div class="row">
+            <button class="btn btn-primary" data-copy><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy note</button>
+            <a class="btn btn-ghost btn-sm" style="flex:0 0 auto" data-ebay target="_blank" rel="noopener" href="https://www.ebay.com/sh/ord">eBay</a>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-done style="width:auto;align-self:flex-start">Mark done</button>
+        </div>`;
+      el.querySelector("[data-sub]").value = s.draft?.subject || "";
+      const bodyEl = el.querySelector("[data-body]");
+      bodyEl.value = s.draft?.body || "";
+      requestAnimationFrame(()=>{ bodyEl.style.height="auto"; bodyEl.style.height=Math.min(bodyEl.scrollHeight+2,520)+"px"; });
+      el.querySelector("[data-copy]").onclick = async ()=>{
+        const txt = "Subject: "+el.querySelector("[data-sub]").value+"\n\n"+bodyEl.value;
+        try{ await navigator.clipboard.writeText(txt); toast("Copied — paste in eBay Messages"); }
+        catch(e){ bodyEl.focus(); bodyEl.select(); toast("Select all & copy"); }
+      };
+      el.querySelector("[data-done]").onclick = ()=>{ const d=doneSet(); d.add(key); setDone(d); render(data); toast("Marked done"); };
+      list.appendChild(el);
+    });
+  }
+
+  // ---- events ----
+  $("unlockBtn").onclick = async ()=>{
+    const p = $("passInput").value; if(!p){ $("passInput").focus(); return; }
+    if($("remember").checked) localStorage.setItem(LS_PASS, p); else localStorage.removeItem(LS_PASS);
+    await tryUnlock(p, false);
+  };
+  $("passInput").addEventListener("keydown", e=>{ if(e.key==="Enter") $("unlockBtn").click(); });
+  $("lockBtn").onclick = ()=>{ localStorage.removeItem(LS_PASS); $("passInput").value=""; show("gate"); $("gateMsg").textContent=""; };
+  $("refreshBtn").onclick = async ()=>{
+    show("loading");
+    await loadCipher();
+    const saved = localStorage.getItem(LS_PASS);
+    if(saved) await tryUnlock(saved, true); else show("gate");
+  };
+
+  (async function init(){
+    show("loading");
+    await loadCipher();
+    const saved = localStorage.getItem(LS_PASS);
+    if(saved){ await tryUnlock(saved, true); }
+    else { show("gate"); if(!cipherB64) $("gateMsg").textContent="Tip: once the cloud watcher is set up, your sales will appear here."; }
+  })();
+})();
+</script>
+</body>
+</html>
