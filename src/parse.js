@@ -17,15 +17,13 @@ export const SETTINGS = {
   dutyBody:
 `Dear {buyer},
 
-Thank you for your order ({po}). We are preparing your shipment of {items} for despatch to {country}.
+Thank you for your order ({po}) for {items}, being shipped to {country}.
 
-Please note an important point regarding customs:
+First, could you please reply with your email address? We will use it to send you the shipment tracking, invoice and any customs documents directly.
 
-Any import duty, customs clearance charges, VAT / GST or other taxes charged by the customs authorities in {country} are NOT included in our invoice. These charges are payable by the buyer / consignee at the destination.
+Also, an important note regarding customs: any import duty, customs clearance charges, VAT / GST or other taxes levied by the customs authorities in {country} are NOT included in our invoice and are payable by the buyer / consignee at the destination. We recommend checking the applicable import duty with your local customs broker in advance, so that customs clearance and delivery are not delayed.
 
-We recommend you check the applicable import duty with your local customs broker in advance, so that customs clearance and final delivery are not delayed.
-
-As soon as the booking is confirmed we will share the shipment tracking details. Kindly reply with your email address so that we can send you the tracking and any customs documents directly.
+We will share the tracking details as soon as the booking is confirmed.
 
 Warm regards,
 INMATETO`
