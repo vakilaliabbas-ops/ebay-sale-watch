@@ -29,7 +29,7 @@ Warm regards,
 INMATETO`
 };
 
-const COUNTRIES = {"united kingdom":"GB","uk":"GB","england":"GB","great britain":"GB","united states":"US","usa":"US","us":"US","united arab emirates":"AE","uae":"AE","dubai":"AE","germany":"DE","france":"FR","italy":"IT","spain":"ES","netherlands":"NL","belgium":"BE","canada":"CA","australia":"AU","new zealand":"NZ","saudi arabia":"SA","ksa":"SA","qatar":"QA","kuwait":"KW","oman":"OM","bahrain":"BH","singapore":"SG","malaysia":"MY","indonesia":"ID","thailand":"TH","vietnam":"VN","philippines":"PH","japan":"JP","south korea":"KR","korea":"KR","china":"CN","hong kong":"HK","taiwan":"TW","bangladesh":"BD","sri lanka":"LK","pakistan":"PK","south africa":"ZA","nigeria":"NG","kenya":"KE","egypt":"EG","turkey":"TR","brazil":"BR","mexico":"MX","argentina":"AR","russia":"RU","poland":"PL","sweden":"SE","norway":"NO","denmark":"DK","finland":"FI","ireland":"IE","portugal":"PT","switzerland":"CH","austria":"AT","greece":"GR","israel":"IL","india":"IN"};
+const COUNTRIES = {"united kingdom":"GB","uk":"GB","england":"GB","great britain":"GB","united states":"US","usa":"US","us":"US","united arab emirates":"AE","uae":"AE","dubai":"AE","germany":"DE","france":"FR","italy":"IT","spain":"ES","netherlands":"NL","belgium":"BE","canada":"CA","australia":"AU","new zealand":"NZ","saudi arabia":"SA","ksa":"SA","qatar":"QA","kuwait":"KW","oman":"OM","bahrain":"BH","singapore":"SG","malaysia":"MY","indonesia":"ID","thailand":"TH","vietnam":"VN","philippines":"PH","japan":"JP","south korea":"KR","korea":"KR","china":"CN","hong kong":"HK","taiwan":"TW","bangladesh":"BD","sri lanka":"LK","pakistan":"PK","south africa":"ZA","nigeria":"NG","kenya":"KE","egypt":"EG","turkey":"TR","brazil":"BR","mexico":"MX","argentina":"AR","peru":"PE","colombia":"CO","ecuador":"EC","bolivia":"BO","chile ":"CL","uruguay":"UY","paraguay":"PY","venezuela":"VE","panama":"PA","costa rica":"CR","guatemala":"GT","dominican republic":"DO","russia":"RU","poland":"PL","sweden":"SE","norway":"NO","denmark":"DK","finland":"FI","ireland":"IE","portugal":"PT","switzerland":"CH","austria":"AT","greece":"GR","israel":"IL","india":"IN"};
 
 export function iso(country){ if(!country) return ""; return COUNTRIES[country.trim().toLowerCase()] || ""; }
 export function flag(country){ const c=iso(country); if(!c) return "📦"; return String.fromCodePoint(...[...c].map(ch=>127397+ch.charCodeAt(0))); }
@@ -80,23 +80,17 @@ export function parseEmail(text){
     else if(/has been paid for|you got paid|has paid|get a shipping label|\bship by\b/i.test(text)) out.stage='ready';
     else out.stage='sale';
     let sm=text.match(/(?:Sold|paid)\s*:?\s*((?:US\s*)?\$[\d,]+\.\d{2})/i); if(sm) out.value=sm[1].replace(/\s+/g," ").trim();
-    // buyer name + city + country from the "Your buyer's shipping details:" block
-    let region=text.match(/shipping details\s*:?([\s\S]{0,340})/i);
+    // Buyer + city + country from the "...shipping details:" block. The address is the run of
+    // lines right after the label, ending at a blank gap or "SHIP BY" / "Your buyer" etc.
+    // The LAST line of that block is the destination country (works for ANY country).
+    let region=text.match(/shipping details\s*:?\s*([\s\S]{0,360})/i);
     if(region){
-      const lines=region[1].split(/\n/).map(s=>s.trim()).filter(Boolean)
-        .filter(l=> !/^ship by/i.test(l) && !/^view order/i.test(l) && !/^your buyer/i.test(l) && !/^\d{1,2}\s+\w{3,9},?\s+\d{4}$/.test(l));
-      // name/company = first plain-text line (letters/&/space, no digits) that isn't a country or a street ("Via ...")
-      const nameLine=lines.find(l=> /^[A-Z][A-Za-z.'&\- ]{1,44}$/.test(l) && !iso(l) && !/^(via|street|st\.|road|rd\.|ave|apt|floor)\b/i.test(l));
-      if(nameLine) out.buyer=nameLine;
-      // country = a line that is a recognised country name (overrides any earlier guess)
-      const countryLine=lines.find(l=> iso(l));
-      if(countryLine){
-        out.country=countryLine;
-        const ci=lines.indexOf(countryLine);
-        if(ci>0) out.port=lines[ci-1].replace(/[.,;]\s*[\dA-Z\- ]*$/,"").replace(/[.,;]\s*$/,"").trim();  // city line above the country
-      } else {
-        const cityLine=lines.find(l=> /,\s*[A-Z]{2}\b/.test(l));
-        if(cityLine) out.port=cityLine.replace(/\s*\d{3,}.*$/,"").replace(/[.,;]\s*$/,"").trim();
+      const block = region[1].split(/\n\s*\n|SHIP BY|Your buyer|View order|time to get a shipping label|Unless your funds/i)[0];
+      const lines = block.split(/\n/).map(s=>s.trim()).filter(Boolean);
+      if(lines.length>=2){
+        if(!/^\d/.test(lines[0])) out.buyer = lines[0];                       // first line = buyer name / company
+        out.country = lines[lines.length-1].replace(/[.,;]\s*$/,"").trim();   // last line = destination country
+        if(lines.length>=3) out.port = lines[lines.length-2].split(",")[0].replace(/\s+\d{2,}.*$/,"").trim();  // city
       }
     }
   }
